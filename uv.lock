@@ -51,7 +51,7 @@ wheels = [
 ]
 
 [[package]]
-name = "opalc1"
+name = "opal-c1-ark"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
