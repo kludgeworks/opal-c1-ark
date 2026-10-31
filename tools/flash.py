@@ -1,12 +1,12 @@
 #!/usr/bin/env -S uv run python -P
 # SPDX-License-Identifier: MIT
 #MISE description="Flash the upgraded Luxonis v0.0.29 bootloader or archived Opal C1 images to SPI flash"
-#USAGE flag "--target <target>" default="luxonis-bootloader" help="What to flash to SPI flash" {
+#USAGE flag "--target <target>" default="luxonis-bootloader" conflicts="--bootloader-file" help="What to flash to SPI flash" {
 #USAGE     long_help "Firmware image from firmware/ to flash to SPI flash:\n  - luxonis-bootloader: Upgraded Luxonis v0.0.29 USB bootloader (firmware/luxonis/bootloader/depthai-bootloader-usb.cmd), fixing the < 0.0.28 soft-reset hang while preserving the C1 application at 0x100000\n  - opal-bootloader: Stock v0.0.15 USB bootloader from Opal Composer (firmware/opal-c1/bootloader/depthai-bootloader-usb.cmd), preserving the C1 application at 0x100000\n  - opal-application: Stock 11.0 MiB Opal C1 standalone UVC+Mic SBR application (firmware/opal-c1/application/opal-c1-standalone.sbr) at 0x100000, preserving the bootloader"
 #USAGE     choices "luxonis-bootloader" "opal-bootloader" "opal-application"
 #USAGE }
+#USAGE flag "--bootloader-file <path>" conflicts="--target" help="Custom bootloader .cmd binary path to flash"
 #USAGE flag "--mxid <mxid>" help="Target Opal C1 Myriad X device ID (auto-detected if omitted)"
-#USAGE flag "--bootloader-file <path>" help="Custom bootloader .cmd binary path (overrides --target)"
 
 import hashlib
 import os
