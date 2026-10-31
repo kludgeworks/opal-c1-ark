@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: MIT
 #MISE description="Flash the upgraded Luxonis v0.0.29 bootloader or archived Opal C1 images to SPI flash"
 #USAGE flag "--target <target>" default="luxonis-bootloader" conflicts="--bootloader-file" help="What to flash to SPI flash" {
-#USAGE     long_help "Firmware image from firmware/ to flash to SPI flash:\n  - luxonis-bootloader: Upgraded Luxonis v0.0.29 USB bootloader (firmware/luxonis/bootloader/depthai-bootloader-usb.cmd), fixing the < 0.0.28 soft-reset hang while preserving the C1 application at 0x100000\n  - opal-bootloader: Stock v0.0.15 USB bootloader from Opal Composer (firmware/opal-c1/bootloader/depthai-bootloader-usb.cmd), preserving the C1 application at 0x100000\n  - opal-application: Stock 11.0 MiB Opal C1 standalone UVC+Mic SBR application (firmware/opal-c1/application/opal-c1-standalone.sbr) at 0x100000, preserving the bootloader"
-#USAGE     choices "luxonis-bootloader" "opal-bootloader" "opal-application"
+#USAGE     long_help "Firmware image from firmware/ to flash to SPI flash:\n  - luxonis-bootloader: Upgraded Luxonis v0.0.29 USB bootloader (firmware/luxonis/bootloader/depthai-bootloader-usb.cmd), fixing the < 0.0.28 soft-reset hang while preserving the C1 application at 0x100000\n  - opal-bootloader: Stock v0.0.15 USB bootloader from Opal Composer (firmware/opal-c1/bootloader/depthai-bootloader-usb.cmd), preserving the C1 application at 0x100000\n  - opal-application: Stock 11.0 MiB Opal C1 standalone UVC+Mic SBR application (firmware/opal-c1/application/opal-c1-standalone.sbr) at 0x100000, preserving the bootloader\n  - custom-uvc: Modern DepthAI 2025 SuperSpeed UVC pipeline (1080p Sony IMX582, ROTATE_180_DEG, continuous AF, clean descriptors)"
+#USAGE     choices "luxonis-bootloader" "opal-bootloader" "opal-application" "custom-uvc"
 #USAGE }
 #USAGE flag "--bootloader-file <path>" conflicts="--target" help="Custom bootloader .cmd binary path to flash"
 #USAGE flag "--mxid <mxid>" help="Target Opal C1 Myriad X device ID (auto-detected if omitted)"
@@ -42,6 +42,7 @@ OPAL_PIDS = (0xF63D, 0xF63C)
 
 OPAL_BL_PATH = REPO_ROOT / "firmware" / "opal-c1" / "bootloader" / "depthai-bootloader-usb.cmd"
 OPAL_APP_PATH = REPO_ROOT / "firmware" / "opal-c1" / "application" / "opal-c1-standalone.sbr"
+CUSTOM_DAP_PATH = REPO_ROOT / "firmware" / "custom" / "opal-c1-ark-edition.dap"
 BACKUP_1MB_PATH = REPO_ROOT / "backups" / "bootloader_0.0.15_1MB.bin"
 APPLICATION_OFFSET = 0x100000
 
@@ -163,6 +164,7 @@ def flash_image(target: str, mxid: str, custom_file: str | None) -> None:
         )
 
     use_flash_bootloader = True
+    use_flash_dap = False
     flash_offset = 0
     if custom_file:
         raw_path = pathlib.Path(custom_file)
@@ -179,12 +181,17 @@ def flash_image(target: str, mxid: str, custom_file: str | None) -> None:
         target_desc = "Opal C1 Standalone SBR Application Image (0x100000)"
         use_flash_bootloader = False
         flash_offset = APPLICATION_OFFSET
+    elif target == "custom-uvc":
+        target_path = CUSTOM_DAP_PATH
+        target_desc = "Modern SuperSpeed UVC Pipeline Package (Ark Edition)"
+        use_flash_bootloader = False
+        use_flash_dap = True
     else:
         raise ValueError(f"Unsupported flash target: {target!r}")
 
     if not target_path.exists():
         raise RuntimeError(
-            f"Target binary {target_path} not found. Run 'mise run download' first."
+            f"Target binary {target_path} not found. Run 'mise run download' or build it first."
         )
 
     target_bytes = target_path.read_bytes()
@@ -219,6 +226,12 @@ def flash_image(target: str, mxid: str, custom_file: str | None) -> None:
                     dai.DeviceBootloader.Type.USB,
                     on_progress,
                     str(target_path),
+                )
+            elif use_flash_dap:
+                ok, msg = bl.flashDepthaiApplicationPackage(
+                    on_progress,
+                    list(target_bytes),
+                    dai.DeviceBootloader.Memory.FLASH,
                 )
             else:
                 ok, msg = bl.flashCustom(
