@@ -1,8 +1,12 @@
 #!/usr/bin/env -S uv run python -P
 # SPDX-License-Identifier: MIT
-#MISE description="Flash the upgraded Luxonis USB bootloader (v0.0.29) to the Opal C1 SPI flash"
+#MISE description="Flash the upgraded Luxonis v0.0.29 bootloader or archived Opal C1 images to SPI flash"
+#USAGE flag "--target <target>" default="luxonis-bootloader" help="What to flash to SPI flash" {
+#USAGE     long_help "Firmware image from firmware/ to flash to SPI flash:\n  - luxonis-bootloader: Upgraded Luxonis v0.0.29 USB bootloader (firmware/luxonis/bootloader/depthai-bootloader-usb.cmd), fixing the < 0.0.28 soft-reset hang while preserving the C1 application at 0x100000\n  - opal-bootloader: Stock v0.0.15 USB bootloader from Opal Composer (firmware/opal-c1/bootloader/depthai-bootloader-usb.cmd), preserving the C1 application at 0x100000\n  - opal-application: Stock 11.0 MiB Opal C1 standalone UVC+Mic SBR application (firmware/opal-c1/application/opal-c1-standalone.sbr) at 0x100000, preserving the bootloader"
+#USAGE     choices "luxonis-bootloader" "opal-bootloader" "opal-application"
+#USAGE }
 #USAGE flag "--mxid <mxid>" help="Target Opal C1 Myriad X device ID (auto-detected if omitted)"
-#USAGE flag "--bootloader-file <path>" help="Path to bootloader .cmd binary (defaults to firmware/luxonis/bootloader/depthai-bootloader-usb.cmd)"
+#USAGE flag "--bootloader-file <path>" help="Custom bootloader .cmd binary path (overrides --target)"
 
 import hashlib
 import os
@@ -36,7 +40,10 @@ from rich.table import Table
 MOVIDIUS_VID = 0x03E7
 OPAL_PIDS = (0xF63D, 0xF63C)
 
+OPAL_BL_PATH = REPO_ROOT / "firmware" / "opal-c1" / "bootloader" / "depthai-bootloader-usb.cmd"
+OPAL_APP_PATH = REPO_ROOT / "firmware" / "opal-c1" / "application" / "opal-c1-standalone.sbr"
 BACKUP_1MB_PATH = REPO_ROOT / "backups" / "bootloader_0.0.15_1MB.bin"
+APPLICATION_OFFSET = 0x100000
 
 console = Console()
 
@@ -143,7 +150,7 @@ def resolve_mxid(explicit_mxid: str | None, topo: dict | None) -> str:
     )
 
 
-def flash_bootloader(mxid: str, target_path: pathlib.Path) -> None:
+def flash_image(target: str, mxid: str, custom_file: str | None) -> None:
     if not BACKUP_1MB_PATH.exists():
         console.print(
             Panel(
@@ -155,9 +162,29 @@ def flash_bootloader(mxid: str, target_path: pathlib.Path) -> None:
             )
         )
 
+    use_flash_bootloader = True
+    flash_offset = 0
+    if custom_file:
+        raw_path = pathlib.Path(custom_file)
+        target_path = raw_path if raw_path.is_absolute() else (REPO_ROOT / raw_path).resolve()
+        target_desc = f"Custom USB Bootloader ({target_path.name})"
+    elif target == "luxonis-bootloader":
+        target_path = DEFAULT_BL_PATH
+        target_desc = "Luxonis USB Bootloader v0.0.29"
+    elif target == "opal-bootloader":
+        target_path = OPAL_BL_PATH
+        target_desc = "Opal Composer Stock USB Bootloader (v0.0.15)"
+    elif target == "opal-application":
+        target_path = OPAL_APP_PATH
+        target_desc = "Opal C1 Standalone SBR Application Image (0x100000)"
+        use_flash_bootloader = False
+        flash_offset = APPLICATION_OFFSET
+    else:
+        raise ValueError(f"Unsupported flash target: {target!r}")
+
     if not target_path.exists():
         raise RuntimeError(
-            f"Bootloader binary {target_path} not found. Run 'mise run download --source luxonis' first."
+            f"Target binary {target_path} not found. Run 'mise run download' first."
         )
 
     target_bytes = target_path.read_bytes()
@@ -180,18 +207,26 @@ def flash_bootloader(mxid: str, target_path: pathlib.Path) -> None:
             progress.remove_task(conn_task)
 
             flash_task = progress.add_task(
-                f"Flashing USB Bootloader ({len(target_bytes):,} B)...", total=100.0
+                f"Flashing {target_desc} ({len(target_bytes):,} B)...", total=100.0
             )
 
             def on_progress(p: float) -> None:
                 progress.update(flash_task, completed=p * 100.0)
 
-            ok, msg = bl.flashBootloader(
-                dai.DeviceBootloader.Memory.FLASH,
-                dai.DeviceBootloader.Type.USB,
-                on_progress,
-                str(target_path),
-            )
+            if use_flash_bootloader:
+                ok, msg = bl.flashBootloader(
+                    dai.DeviceBootloader.Memory.FLASH,
+                    dai.DeviceBootloader.Type.USB,
+                    on_progress,
+                    str(target_path),
+                )
+            else:
+                ok, msg = bl.flashCustom(
+                    dai.DeviceBootloader.Memory.FLASH,
+                    flash_offset,
+                    target_bytes,
+                    on_progress,
+                )
             progress.update(flash_task, completed=100.0)
 
             if not ok:
@@ -214,7 +249,7 @@ def flash_bootloader(mxid: str, target_path: pathlib.Path) -> None:
         rel_path = str(target_path)
 
     summary = Table(
-        title="SPI Bootloader Flash Summary",
+        title="SPI Flash Summary",
         box=box.ROUNDED,
         header_style="bold green",
         title_style="bold white",
@@ -222,13 +257,14 @@ def flash_bootloader(mxid: str, target_path: pathlib.Path) -> None:
     summary.add_column("Field", style="bold")
     summary.add_column("Value")
 
+    summary.add_row("Target", f"[cyan]{target}[/cyan] ({target_desc})")
     summary.add_row("Source Binary", f"{rel_path} ({len(target_bytes):,} B)")
     summary.add_row("Source SHA-256", f"[dim]{target_sha}[/dim]")
     summary.add_row("Previous SPI Bootloader", f"[yellow]{before_ver}[/yellow]")
     summary.add_row("Verified SPI Bootloader", f"[bold green]{after_ver}[/bold green]")
     summary.add_row(
         "Application Partition @ 0x100000",
-        f"hasApplication=[bold green]{app_info.hasApplication}[/bold green] (untouched)",
+        f"hasApplication=[bold green]{app_info.hasApplication}[/bold green]",
     )
     summary.add_row(
         "USB Bootloader Config",
@@ -243,19 +279,19 @@ def flash_bootloader(mxid: str, target_path: pathlib.Path) -> None:
 
 
 def main() -> None:
+    target = os.environ["usage_target"]
     custom_file = os.environ.get("usage_bootloader_file")
-    target_path = pathlib.Path(custom_file).resolve() if custom_file else DEFAULT_BL_PATH
 
     console.print(
         Panel.fit(
-            "[bold white]Opal C1 SPI Bootloader Flasher[/bold white]\n"
-            "[dim]Upgrades the SPI USB bootloader while preserving the Opal C1 application partition[/dim]",
+            f"[bold white]Opal C1 SPI Flasher[/bold white]\n"
+            f"[dim]Target: [bold cyan]{target}[/bold cyan][/dim]",
             border_style="bright_yellow",
         )
     )
     topo = check_and_warn_topology()
     mxid = resolve_mxid(os.environ.get("usage_mxid"), topo)
-    flash_bootloader(mxid, target_path)
+    flash_image(target, mxid, custom_file)
 
 
 if __name__ == "__main__":
