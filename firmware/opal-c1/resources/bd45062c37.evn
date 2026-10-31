@@ -1,0 +1,28 @@
+import time
+import io
+import GPIO
+# PWM BLU, GPIO 34
+# PWM GRN, GPIO 37
+# PWM RED, GPIO 58
+#
+# I'm keeping this PWM code in to easily enable it if we decide
+# we want it.
+#
+# Pin 34, repeat 0 (continuous), highCount (clock cycles), lowCount (clock cycles)
+#setPwm(34, 0, 10000000, 10000000)
+#enablePwm(34, 1)
+# Pin 37, repeat 0 (continuous), highCount (clock cycles), lowCount (clock cycles)
+#setPwm(37, 0, 10000000, 10000000)
+#enablePwm(37, 1)
+#setPwm(58, 0, 10000000, 10000000)
+#enablePwm(58, 1)
+GPIO.setup(34, GPIO.OUT)
+GPIO.setup(37, GPIO.OUT)
+GPIO.setup(58, GPIO.OUT)
+while True:
+    buf = node.io['ledOnOffCtrl'].get().getData()
+    if buf[0] == 1:
+        GPIO.write(34, buf[1])
+        GPIO.write(37, buf[2])
+        GPIO.write(58, buf[3])
+    time.sleep(1)

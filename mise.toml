@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: MIT
+#:schema https://mise.jdx.dev/schema/mise.json
+
+[task_config]
+includes = ["tools"]
+
+[tools]
+python = "3.12.13"
+usage = "3.5.3"
+uv = "0.11.21"
+
+[hooks]
+postinstall = "uv sync"

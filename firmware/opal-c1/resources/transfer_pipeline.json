@@ -1,0 +1,14 @@
+{
+  "name": "T2",
+  "icon": "_",
+  "filters": [
+    {
+        "id": 1,
+        "filterName": "CIPhotoEffectTransfer",
+        "isUnary": true,
+        "values": {
+        },
+        "outputs": []
+    }
+  ]
+}

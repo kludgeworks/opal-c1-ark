@@ -1,0 +1,14 @@
+{
+  "name": "N2",
+  "icon": "_",
+  "filters": [
+    {
+        "id": 1,
+        "filterName": "CIPhotoEffectNoir",
+        "isUnary": true,
+        "values": {
+        },
+        "outputs": []
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+[project]
+name = "opalc1"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "depthai>=2.28,<3.0",
+    "rich>=15.0.0",
+]

@@ -1,0 +1,15 @@
+{
+  "name": "S1",
+  "icon": "_",
+  "filters": [
+    {
+        "id": 1,
+        "filterName": "S1",
+        "isUnary": true,
+        "values": {
+        },
+        "outputs": []
+    }
+  ]
+}
+

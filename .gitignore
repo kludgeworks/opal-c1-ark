@@ -1,0 +1,22 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Local camera SPI flash dumps
+backups/
+
+# Large temporary download caches & upstream DepthAI device firmware
+# (keep firmware/opal-c1/, firmware/luxonis/bootloader/, and firmware/manifest.json tracked)
+firmware/archives/
+firmware/opal/
+firmware/luxonis/device/
+
+# Local AsciiDoc drafts & notes
+*.adoc

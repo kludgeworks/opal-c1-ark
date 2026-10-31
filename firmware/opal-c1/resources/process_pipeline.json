@@ -1,0 +1,14 @@
+{
+  "name": "P1",
+  "icon": "_",
+  "filters": [
+    {
+        "id": 1,
+        "filterName": "CIPhotoEffectProcess",
+        "isUnary": true,
+        "values": {
+        },
+        "outputs": []
+    }
+  ]
+}

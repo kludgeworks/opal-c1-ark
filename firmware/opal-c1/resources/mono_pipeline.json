@@ -1,0 +1,14 @@
+{
+  "name": "M1",
+  "icon": "_",
+  "filters": [
+    {
+        "id": 1,
+        "filterName": "CIPhotoEffectMono",
+        "isUnary": true,
+        "values": {
+        },
+        "outputs": []
+    }
+  ]
+}

@@ -1,0 +1,409 @@
+{
+  "luxonis_bootloader": {
+    "version": "0.0.29",
+    "maturity": "release",
+    "archive": "archives/depthai-bootloader-fwp-0.0.29.tar.xz",
+    "archive_sha256": "2e7808bb4917c3405a7cc691e94f3a0e38f92025f89cc980aec5dd1488ab2dc3",
+    "sdk_embedded_version": "0.0.29",
+    "sdk_embedded_usb_sha256": "ab0fe29ce16f0deb6d1ffdcfafdd6dbd3e15d70480a5ae3daeed8d2cb6772faf",
+    "files": [
+      {
+        "name": "depthai-bootloader-usb.cmd",
+        "path": "luxonis/bootloader/depthai-bootloader-usb.cmd",
+        "size": 788400,
+        "sha256": "ab0fe29ce16f0deb6d1ffdcfafdd6dbd3e15d70480a5ae3daeed8d2cb6772faf"
+      }
+    ]
+  },
+  "opal_composer_releases": [
+    {
+      "title": "2.0",
+      "short_version": "2.0",
+      "build": "24",
+      "pub_date": "Fri, 18 Oct 2024 13:46:08 -0700",
+      "filename": "Opal_Composer_2.0.0_24.dmg",
+      "url": "https://updates.opal.camera/release/Opal_Composer_2.0.0_24.dmg",
+      "size": 156208242,
+      "ed_signature": "lwXKrdNETviEOc0U2B9wE4juhcH1Sn1G1hQxr+hUcQpk2ymL38i3+6g8jlFZ4Cjjx9UouD97EqxtDwMlji0nBQ=="
+    },
+    {
+      "title": "2.0",
+      "short_version": "2.0",
+      "build": "23",
+      "pub_date": "Thu, 17 Oct 2024 12:52:15 -0700",
+      "filename": "Opal_Composer_2.0.0_23.dmg",
+      "url": "https://updates.opal.camera/release/Opal_Composer_2.0.0_23.dmg",
+      "size": 156209725,
+      "ed_signature": "fZCX05GqEzPtCRMADuZSz7leSIWK0vxyce2IfYf2N2bItBXHlFocHsZ5LlO6W/2IkYMTtjlv7uQxngDjQTS5Bg=="
+    },
+    {
+      "title": "1.4.4",
+      "short_version": "1.4.4",
+      "build": "22",
+      "pub_date": "Wed, 26 Jun 2024 01:20:42 -0700",
+      "filename": "Opal_Composer_1.4.4_22.dmg",
+      "url": "https://updates.opal.camera/release/Opal_Composer_1.4.4_22.dmg",
+      "size": 154889817,
+      "ed_signature": "NQNFBLFzgCM7HrP+41fIym+2Rf1JrGHwMRxoKlAzgN+ydCLa7Cec90tpYCwTGzsBxjbermnJUr0rcu0kOLgqAg=="
+    },
+    {
+      "title": "1.4.3",
+      "short_version": "1.4.3",
+      "build": "17",
+      "pub_date": "Thu, 23 May 2024 11:04:41 -0700",
+      "filename": "Opal_Composer_1.4.3_17.dmg",
+      "url": "https://updates.opal.camera/release/Opal_Composer_1.4.3_17.dmg",
+      "size": 154890430,
+      "ed_signature": "sDolYR6j1sSVeYtqp66oM6ePTpUsnUqhVVWWxFBMHOFbKRa/eos+LfuNFMyUhOPZhA1Sv4aBArlV6XHUHzOsDg=="
+    },
+    {
+      "title": "1.4.2",
+      "short_version": "1.4.2",
+      "build": "16",
+      "pub_date": "Mon, 20 May 2024 10:41:06 -0700",
+      "filename": "Opal_Composer_1.4.2_16.dmg",
+      "url": "https://updates.opal.camera/release/Opal_Composer_1.4.2_16.dmg",
+      "size": 154876459,
+      "ed_signature": "SCQwLxct5OIIzj4KcM4oFH/iCahYfHlVSldvl6VTR5cXycSgwEaKwHSGebnzooMmlCAQlOoND4cd0rNY1uZrBA=="
+    },
+    {
+      "title": "1.4.1",
+      "short_version": "1.4.1",
+      "build": "15",
+      "pub_date": "Mon, 29 Apr 2024 14:09:46 -0700",
+      "filename": "Opal_Composer_1.4.1_15.dmg",
+      "url": "https://updates.opal.camera/release/Opal_Composer_1.4.1_15.dmg",
+      "size": 154880036,
+      "ed_signature": "XKQpnmllu1PEdvTfdTW3f2FaW2XG3n7Fgflo5fO66VvvdcWZtkyo5Wru2yi47juJmHPPRpMfdBOmDKaiueS0Ag=="
+    },
+    {
+      "title": "1.4.0",
+      "short_version": "1.4.0",
+      "build": "14",
+      "pub_date": "Thu, 04 Apr 2024 16:00:57 -0700",
+      "filename": "Opal_Composer_1.4.0_14.dmg",
+      "url": "https://updates.opal.camera/release/Opal_Composer_1.4.0_14.dmg",
+      "size": 160084799,
+      "ed_signature": "V9Lq+KPUPY/6TeNmN0T0zEWQwFwrDAf5rgX1UWezDeIrqsdtAgemw712d5ZR6SvUuTED1rE87IDPaHg8LEf4DA=="
+    },
+    {
+      "title": "1.3.0",
+      "short_version": "1.3.0",
+      "build": "13",
+      "pub_date": "Thu, 15 Feb 2024 19:06:28 -0800",
+      "filename": "Opal_Composer_1.3.0_13.dmg",
+      "url": "https://updates.opal.camera/release/Opal_Composer_1.3.0_13.dmg",
+      "size": 160297200,
+      "ed_signature": "QpPSw0f24hod6z0AtYyg1g5b3gOlQJ33Yn63Abtpd6MApfyTGMb740eGavCWLU4BsuoZ34EZfwioITXNwxiwCg=="
+    },
+    {
+      "title": "1.2.4",
+      "short_version": "1.2.4",
+      "build": "12",
+      "pub_date": "Mon, 22 Jan 2024 15:04:01 -0800",
+      "filename": "Opal_Composer_1.2.4_12.dmg",
+      "url": "https://updates.opal.camera/release/Opal_Composer_1.2.4_12.dmg",
+      "size": 160301059,
+      "ed_signature": "q+2pDoswadaqZw7RG1Cd95+EdyqyqGDX9UWolZa2zScyp3wIxSPQQ7yMys0sq6LEZL/SMQDCPQGvsDo0KDl/DA=="
+    },
+    {
+      "title": "1.2.3",
+      "short_version": "1.2.3",
+      "build": "11",
+      "pub_date": "Thu, 21 Dec 2023 13:11:16 -0800",
+      "filename": "Opal_Composer_1.2.3_11.dmg",
+      "url": "https://updates.opal.camera/release/Opal_Composer_1.2.3_11.dmg",
+      "size": 160284100,
+      "ed_signature": "ga/OIcPGiwgZIDT88W3GeJY4MHHRww6qnbhqq7N1hJhfEo9WXy28GHEM4QFN06EoL59+BWSAvEVLvPmaZwS1Bg=="
+    }
+  ],
+  "opal_composer": {
+    "releases": [
+      {
+        "title": "2.0",
+        "short_version": "2.0",
+        "build": "24",
+        "pub_date": "Fri, 18 Oct 2024 13:46:08 -0700",
+        "filename": "Opal_Composer_2.0.0_24.dmg",
+        "url": "https://updates.opal.camera/release/Opal_Composer_2.0.0_24.dmg",
+        "size": 156208242,
+        "ed_signature": "lwXKrdNETviEOc0U2B9wE4juhcH1Sn1G1hQxr+hUcQpk2ymL38i3+6g8jlFZ4Cjjx9UouD97EqxtDwMlji0nBQ=="
+      },
+      {
+        "title": "2.0",
+        "short_version": "2.0",
+        "build": "23",
+        "pub_date": "Thu, 17 Oct 2024 12:52:15 -0700",
+        "filename": "Opal_Composer_2.0.0_23.dmg",
+        "url": "https://updates.opal.camera/release/Opal_Composer_2.0.0_23.dmg",
+        "size": 156209725,
+        "ed_signature": "fZCX05GqEzPtCRMADuZSz7leSIWK0vxyce2IfYf2N2bItBXHlFocHsZ5LlO6W/2IkYMTtjlv7uQxngDjQTS5Bg=="
+      },
+      {
+        "title": "1.4.4",
+        "short_version": "1.4.4",
+        "build": "22",
+        "pub_date": "Wed, 26 Jun 2024 01:20:42 -0700",
+        "filename": "Opal_Composer_1.4.4_22.dmg",
+        "url": "https://updates.opal.camera/release/Opal_Composer_1.4.4_22.dmg",
+        "size": 154889817,
+        "ed_signature": "NQNFBLFzgCM7HrP+41fIym+2Rf1JrGHwMRxoKlAzgN+ydCLa7Cec90tpYCwTGzsBxjbermnJUr0rcu0kOLgqAg=="
+      },
+      {
+        "title": "1.4.3",
+        "short_version": "1.4.3",
+        "build": "17",
+        "pub_date": "Thu, 23 May 2024 11:04:41 -0700",
+        "filename": "Opal_Composer_1.4.3_17.dmg",
+        "url": "https://updates.opal.camera/release/Opal_Composer_1.4.3_17.dmg",
+        "size": 154890430,
+        "ed_signature": "sDolYR6j1sSVeYtqp66oM6ePTpUsnUqhVVWWxFBMHOFbKRa/eos+LfuNFMyUhOPZhA1Sv4aBArlV6XHUHzOsDg=="
+      },
+      {
+        "title": "1.4.2",
+        "short_version": "1.4.2",
+        "build": "16",
+        "pub_date": "Mon, 20 May 2024 10:41:06 -0700",
+        "filename": "Opal_Composer_1.4.2_16.dmg",
+        "url": "https://updates.opal.camera/release/Opal_Composer_1.4.2_16.dmg",
+        "size": 154876459,
+        "ed_signature": "SCQwLxct5OIIzj4KcM4oFH/iCahYfHlVSldvl6VTR5cXycSgwEaKwHSGebnzooMmlCAQlOoND4cd0rNY1uZrBA=="
+      },
+      {
+        "title": "1.4.1",
+        "short_version": "1.4.1",
+        "build": "15",
+        "pub_date": "Mon, 29 Apr 2024 14:09:46 -0700",
+        "filename": "Opal_Composer_1.4.1_15.dmg",
+        "url": "https://updates.opal.camera/release/Opal_Composer_1.4.1_15.dmg",
+        "size": 154880036,
+        "ed_signature": "XKQpnmllu1PEdvTfdTW3f2FaW2XG3n7Fgflo5fO66VvvdcWZtkyo5Wru2yi47juJmHPPRpMfdBOmDKaiueS0Ag=="
+      },
+      {
+        "title": "1.4.0",
+        "short_version": "1.4.0",
+        "build": "14",
+        "pub_date": "Thu, 04 Apr 2024 16:00:57 -0700",
+        "filename": "Opal_Composer_1.4.0_14.dmg",
+        "url": "https://updates.opal.camera/release/Opal_Composer_1.4.0_14.dmg",
+        "size": 160084799,
+        "ed_signature": "V9Lq+KPUPY/6TeNmN0T0zEWQwFwrDAf5rgX1UWezDeIrqsdtAgemw712d5ZR6SvUuTED1rE87IDPaHg8LEf4DA=="
+      },
+      {
+        "title": "1.3.0",
+        "short_version": "1.3.0",
+        "build": "13",
+        "pub_date": "Thu, 15 Feb 2024 19:06:28 -0800",
+        "filename": "Opal_Composer_1.3.0_13.dmg",
+        "url": "https://updates.opal.camera/release/Opal_Composer_1.3.0_13.dmg",
+        "size": 160297200,
+        "ed_signature": "QpPSw0f24hod6z0AtYyg1g5b3gOlQJ33Yn63Abtpd6MApfyTGMb740eGavCWLU4BsuoZ34EZfwioITXNwxiwCg=="
+      },
+      {
+        "title": "1.2.4",
+        "short_version": "1.2.4",
+        "build": "12",
+        "pub_date": "Mon, 22 Jan 2024 15:04:01 -0800",
+        "filename": "Opal_Composer_1.2.4_12.dmg",
+        "url": "https://updates.opal.camera/release/Opal_Composer_1.2.4_12.dmg",
+        "size": 160301059,
+        "ed_signature": "q+2pDoswadaqZw7RG1Cd95+EdyqyqGDX9UWolZa2zScyp3wIxSPQQ7yMys0sq6LEZL/SMQDCPQGvsDo0KDl/DA=="
+      },
+      {
+        "title": "1.2.3",
+        "short_version": "1.2.3",
+        "build": "11",
+        "pub_date": "Thu, 21 Dec 2023 13:11:16 -0800",
+        "filename": "Opal_Composer_1.2.3_11.dmg",
+        "url": "https://updates.opal.camera/release/Opal_Composer_1.2.3_11.dmg",
+        "size": 160284100,
+        "ed_signature": "ga/OIcPGiwgZIDT88W3GeJY4MHHRww6qnbhqq7N1hJhfEo9WXy28GHEM4QFN06EoL59+BWSAvEVLvPmaZwS1Bg=="
+      }
+    ],
+    "extracted_opal_c1": {
+      "bootloader": [
+        {
+          "name": "depthai-bootloader-usb.cmd",
+          "path": "opal-c1/bootloader/depthai-bootloader-usb.cmd",
+          "size": 752872,
+          "sha256": "d58098d03b2ed30c6aafa1611c5e9d671256ed3e8450103e5f2717e26d1c4a28"
+        }
+      ],
+      "device": [
+        {
+          "name": "depthai-device-fwp-e2929eb3993d759114d7084074a0eec845c12b45.tar.xz",
+          "path": "opal-c1/device/depthai-device-fwp-e2929eb3993d759114d7084074a0eec845c12b45.tar.xz",
+          "size": 8374632,
+          "sha256": "9bc6bcd20ff0cb0dc3ed12cb9971daadfcc51e803b46a24a88be06f5dd43ae12",
+          "members": [
+            "depthai-device-openvino-2021.4-e2929eb3993d759114d7084074a0eec845c12b45.cmd",
+            "depthai-device-openvino-2020.3-e2929eb3993d759114d7084074a0eec845c12b45.patch",
+            "depthai-device-openvino-2020.4-e2929eb3993d759114d7084074a0eec845c12b45.patch",
+            "depthai-device-openvino-2021.1-e2929eb3993d759114d7084074a0eec845c12b45.patch",
+            "depthai-device-openvino-2021.2-e2929eb3993d759114d7084074a0eec845c12b45.patch",
+            "depthai-device-openvino-2021.3-e2929eb3993d759114d7084074a0eec845c12b45.patch"
+          ]
+        }
+      ],
+      "resources": [
+        {
+          "name": "Opal582_v2.bin",
+          "path": "opal-c1/resources/Opal582_v2.bin",
+          "size": 195916,
+          "sha256": "f41c80032c262d69631be3a0f41264138a335e1948882b3c1bf5d9270a6e95d6"
+        },
+        {
+          "name": "Opal_v0.12.bin",
+          "path": "opal-c1/resources/Opal_v0.12.bin",
+          "size": 197092,
+          "sha256": "8c723046f982093b473345ebf02d38a652995b78bd985a0cc224a6cd3a0d22e1"
+        },
+        {
+          "name": "dd0bad95b2.tlv",
+          "path": "opal-c1/resources/dd0bad95b2.tlv",
+          "size": 1344256,
+          "sha256": "3d59700823e1c20862079fc9531d0ae589790c7c0a112488ec27bded24722c5b"
+        },
+        {
+          "name": "cf422ae69a.sfo",
+          "path": "opal-c1/resources/cf422ae69a.sfo",
+          "size": 1638848,
+          "sha256": "fcaed3e49ff3156c932223634719abe7ca91468dd2474a4bf837d163fb2b3159"
+        },
+        {
+          "name": "2684560952.tlv",
+          "path": "opal-c1/resources/2684560952.tlv",
+          "size": 7808,
+          "sha256": "6f2878177b3a5072b85368e551a69c94c8bc7aa42de247944f0bbe1458775658"
+        },
+        {
+          "name": "49559974de.tlv",
+          "path": "opal-c1/resources/49559974de.tlv",
+          "size": 938752,
+          "sha256": "62c85740e1032278a8d6a6bde31950470c65140ca2efecb7a9621ea228de17bf"
+        },
+        {
+          "name": "6127be7a1f.tlv",
+          "path": "opal-c1/resources/6127be7a1f.tlv",
+          "size": 768576,
+          "sha256": "349a5a772969efdcfd5dff90ef52b9d4dc1a40a27edd6ee7a67c1c0e4ffc2b1d"
+        },
+        {
+          "name": "6f153dffab.evn",
+          "path": "opal-c1/resources/6f153dffab.evn",
+          "size": 7863,
+          "sha256": "b4aef5e0a4c5ed948486920e4f1a05e41bdefa39b410d72027b00200f65fcec1"
+        },
+        {
+          "name": "bd45062c37.evn",
+          "path": "opal-c1/resources/bd45062c37.evn",
+          "size": 766,
+          "sha256": "e952583a698bdb4968be8161b3398f5ffe138378fd9f9cea1c0fb6db7d82a071"
+        },
+        {
+          "name": "237530fe13.evn",
+          "path": "opal-c1/resources/237530fe13.evn",
+          "size": 404,
+          "sha256": "916729902148f6ef77ccfcb69498c8b9b653ab3edd19683191b9a0390b875534"
+        },
+        {
+          "name": "0a8bf313b1.evn",
+          "path": "opal-c1/resources/0a8bf313b1.evn",
+          "size": 393,
+          "sha256": "a5175129b63e38a57fb258f2008e44e475c022b8bf28b243b5524983e325ef5c"
+        },
+        {
+          "name": "142359x2f4.evn",
+          "path": "opal-c1/resources/142359x2f4.evn",
+          "size": 74208,
+          "sha256": "2f29519554efe62cb8d6ef6bd229ac09e09265383670368f1a01d10cf605bbb4"
+        },
+        {
+          "name": "chrome_pipeline.json",
+          "path": "opal-c1/resources/chrome_pipeline.json",
+          "size": 206,
+          "sha256": "cdbbecaff89b7b7965e03b9f1b048e1151f1e323cda01cb0fd7f48c723717dfd"
+        },
+        {
+          "name": "d1_pipeline.json",
+          "path": "opal-c1/resources/d1_pipeline.json",
+          "size": 190,
+          "sha256": "5c7b7cff9c29adf2841133fb35657a509996bdf5d03d6a5fe4536b2572297247"
+        },
+        {
+          "name": "fade_pipeline.json",
+          "path": "opal-c1/resources/fade_pipeline.json",
+          "size": 204,
+          "sha256": "393ddde04274021d77257135f8f09bc78a37fdc44a6f60a4734f8befdca1090b"
+        },
+        {
+          "name": "g1_pipeline.json",
+          "path": "opal-c1/resources/g1_pipeline.json",
+          "size": 190,
+          "sha256": "c1d2eec48483d22ab78e802c34157d587c2c465b655fa54eabc2faaf48e61bf2"
+        },
+        {
+          "name": "instant_pipeline.json",
+          "path": "opal-c1/resources/instant_pipeline.json",
+          "size": 207,
+          "sha256": "f8faa0b1cceea377be7c9ecdd108acd07b295f7e3632b7bff1af98193741fc92"
+        },
+        {
+          "name": "mono_pipeline.json",
+          "path": "opal-c1/resources/mono_pipeline.json",
+          "size": 204,
+          "sha256": "bf0c7aaf21c5ad08c3eda23cb823dc2976ab74a1017fa4fbf7eeb5aa0a1a72ef"
+        },
+        {
+          "name": "noir_pipeline.json",
+          "path": "opal-c1/resources/noir_pipeline.json",
+          "size": 204,
+          "sha256": "f82eda562dc7c414f4fc8695596282d1c3f7c2ef56e2617ce744fc1e804a399e"
+        },
+        {
+          "name": "process_pipeline.json",
+          "path": "opal-c1/resources/process_pipeline.json",
+          "size": 207,
+          "sha256": "ba016be07afd17bc67666e3290c686e4ca65cd0f7aa05e7d89acca44ecbb30bf"
+        },
+        {
+          "name": "q1_pipeline.json",
+          "path": "opal-c1/resources/q1_pipeline.json",
+          "size": 190,
+          "sha256": "30c1d1a1225557172726dcf95cddf07f068a8820480eaf8a93adb0776f9a8703"
+        },
+        {
+          "name": "s1_pipeline.json",
+          "path": "opal-c1/resources/s1_pipeline.json",
+          "size": 190,
+          "sha256": "d96c0bbfee147114b6188d7a8abb41987f23b80165eae3ff37dd12a996d686b0"
+        },
+        {
+          "name": "tonal_pipeline.json",
+          "path": "opal-c1/resources/tonal_pipeline.json",
+          "size": 205,
+          "sha256": "9b8dd1c2eed8c237b034ba2d3f29c0f986ef36da4e1c61db7b23f741f14bf9e9"
+        },
+        {
+          "name": "transfer_pipeline.json",
+          "path": "opal-c1/resources/transfer_pipeline.json",
+          "size": 208,
+          "sha256": "10c253adb126eb5c12415ee74843516ae878a857a08bde8396afb09971621027"
+        },
+        {
+          "name": "x1_pipeline.json",
+          "path": "opal-c1/resources/x1_pipeline.json",
+          "size": 190,
+          "sha256": "01c8b129b8dc27a9a763f6f85d1c415031a52d120c999afa683e24c3e3b02a41"
+        }
+      ]
+    }
+  },
+  "opal_c1_extracted": {
+    "standalone_application_sbr": {
+      "path": "opal-c1/application/opal-c1-standalone.sbr",
+      "size": 11527550,
+      "sha256": "fc106d3cd3f455ede2f6a3f681c2580de204dfacdc4c2648d3e3ab01c4feb2d3"
+    }
+  }
+}

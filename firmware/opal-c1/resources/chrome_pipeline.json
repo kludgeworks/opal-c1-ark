@@ -1,0 +1,14 @@
+{
+  "name": "C1",
+  "icon": "_",
+  "filters": [
+    {
+        "id": 1,
+        "filterName": "CIPhotoEffectChrome",
+        "isUnary": true,
+        "values": {
+        },
+        "outputs": []
+    }
+  ]
+}

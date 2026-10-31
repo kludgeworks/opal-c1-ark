@@ -1,0 +1,16 @@
+import io
+
+is_on = 1
+
+while True:
+    is_on_tmp = None
+    if is_on:
+        is_on_tmp = node.io['chokeOnOffCtrl'].tryGet()
+    else:
+        is_on_tmp = node.io['chokeOnOffCtrl'].get()
+    if is_on_tmp != None:
+        is_on = is_on_tmp.getData()[0]
+    if is_on:
+        uac_result = node.io['inputUAC'].get()
+        if uac_result != None:
+            node.io['uacOutput'].send(uac_result)
