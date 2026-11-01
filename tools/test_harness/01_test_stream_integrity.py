@@ -39,110 +39,11 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from tools.test_harness.hevc import parse_hevc_nal_units
+from tools.test_harness.pipeline import build_dual_stream_pipeline
+
 console = Console()
 REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
-
-
-def parse_hevc_nal_units(data: bytes) -> list[tuple[int, str]]:
-    """Parse ITU-T H.265 (HEVC) NAL units from a raw byte stream."""
-    nal_units = []
-    length = len(data)
-    i = 0
-
-    HEVC_NAL_NAMES = {
-        0: "TRAIL_N (P-frame)",
-        1: "TRAIL_R (P-frame ref)",
-        2: "TSA_N",
-        3: "TSA_R",
-        4: "STSA_N",
-        5: "STSA_R",
-        6: "RADL_N",
-        7: "RADL_R",
-        8: "RASL_N",
-        9: "RASL_R",
-        19: "IDR_W_RADL (Keyframe)",
-        20: "IDR_N_LP (Keyframe)",
-        21: "CRA_NUT (Keyframe CRA)",
-        32: "VPS (Video Parameter Set)",
-        33: "SPS (Seq Parameter Set)",
-        34: "PPS (Pic Parameter Set)",
-        39: "PREFIX_SEI",
-        40: "SUFFIX_SEI",
-    }
-
-    while i < length - 4:
-        # Search for start code: 0x000001 (3 bytes) or 0x00000001 (4 bytes)
-        start_code_len = 0
-        if data[i] == 0x00 and data[i + 1] == 0x00:
-            if data[i + 2] == 0x01:
-                start_code_len = 3
-            elif i < length - 3 and data[i + 2] == 0x00 and data[i + 3] == 0x01:
-                start_code_len = 4
-
-        if start_code_len > 0:
-            header_offset = i + start_code_len
-            if header_offset < length:
-                first_byte = data[header_offset]
-                # HEVC NAL unit type is bits [6:1] of the first header byte
-                nal_type = (first_byte >> 1) & 0x3F
-                name = HEVC_NAL_NAMES.get(nal_type, f"TYPE_{nal_type}")
-                nal_units.append((nal_type, name))
-            i += start_code_len
-        else:
-            i += 1
-
-    return nal_units
-
-
-def build_dual_stream_pipeline(fps: int = 30, bitrate_kbps: int = 25000) -> dai.Pipeline:
-    """Construct the hybrid DepthAI pipeline: 1080p UVC + 4K H.265 + System Telemetry."""
-    pipeline = dai.Pipeline()
-
-    # 1. Early UVC USB descriptor configuration (Plug & Play 1080p fallback)
-    board_config = dai.BoardConfig()
-    uvc_config = dai.BoardConfig.UVC()
-    uvc_config.enable = True
-    uvc_config.width = 1920
-    uvc_config.height = 1080
-    uvc_config.cameraName = "Opal C1 (Ark Edition)"
-    board_config.uvc = uvc_config
-    pipeline.setBoardConfig(board_config)
-
-    # 2. Configure 48 MP Sony IMX582 Sensor (CAM_A)
-    cam = pipeline.create(dai.node.ColorCamera)
-    cam.setBoardSocket(dai.CameraBoardSocket.CAM_A)
-    cam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_4_K)
-    cam.setFps(fps)
-    cam.setImageOrientation(dai.CameraImageOrientation.ROTATE_180_DEG)
-    cam.initialControl.setAutoFocusMode(dai.CameraControl.AutoFocusMode.CONTINUOUS_VIDEO)
-
-    # Hardware ISP: downscale 4K raw Bayer to 1080p directly on-die (0 ms overhead)
-    cam.setIspScale(1, 2)
-    # Native full 4K output for the H.265 encoder
-    cam.setVideoSize(3840, 2160)
-
-    # 3. UVC Output (Streams 1080p uncompressed NV12 from hardware ISP)
-    uvc = pipeline.create(dai.node.UVC)
-    cam.isp.link(uvc.input)
-
-    # 4. Hardware H.265 Encoder ASIC (Full 4K @ 25 Mbps CBR)
-    enc = pipeline.create(dai.node.VideoEncoder)
-    enc.setDefaultProfilePreset(fps, dai.VideoEncoderProperties.Profile.H265_MAIN)
-    enc.setBitrateKbps(bitrate_kbps)
-    enc.setKeyframeFrequency(fps)  # 1 keyframe per second
-    enc.setRateControlMode(dai.VideoEncoderProperties.RateControlMode.CBR)
-    cam.video.link(enc.input)
-
-    # 5. Non-blocking XLinkOut for H.265 (Immunity against UVC starvation)
-    xout_h265 = pipeline.create(dai.node.XLinkOut)
-    xout_h265.setStreamName("h265")
-    xout_h265.input.setBlocking(False)  # CRITICAL: drops oldest frames if host lags
-    xout_h265.input.setQueueSize(30)
-    enc.bitstream.link(xout_h265.input)
-
-    # 6. Real-time Silicon Health & Thermal Telemetry
-    sys_logger = pipeline.create(dai.node.SystemLogger)
-    sys_logger.setRate(1.0)  # 1 Hz sample rate
     xout_sys = pipeline.create(dai.node.XLinkOut)
     xout_sys.setStreamName("sysinfo")
     sys_logger.out.link(xout_sys.input)

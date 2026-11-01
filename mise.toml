@@ -11,3 +11,15 @@ uv = "0.11.21"
 
 [hooks]
 postinstall = "uv sync"
+
+[tasks.test]
+description = "Run offline unit test suite (no hardware required)"
+run = "uv run pytest tests/unit"
+
+[tasks."test:hardware"]
+description = "Run live hardware integration test suite (requires connected Opal C1)"
+run = "uv run pytest tests/hardware -m hardware"
+
+[tasks."test:all"]
+description = "Run complete test suite (unit + hardware)"
+run = "uv run pytest"
