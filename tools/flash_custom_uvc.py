@@ -38,40 +38,18 @@ def build_pipeline() -> dai.Pipeline:
     board_config.uvc = uvc_config
     pipeline.setBoardConfig(board_config)
 
-    # 2. Sony IMX582 Sensor (CAM_A) - Full 4K capture (3840x2160 @ 30 FPS)
+    # 2. Sony IMX582 Sensor (CAM_A) - 4K capture with Hardware ISP 1:2 scale (Zero latency!)
     cam = pipeline.create(dai.node.ColorCamera)
     cam.setBoardSocket(dai.CameraBoardSocket.CAM_A)
     cam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_4_K)
+    cam.setIspScale(1, 2)  # 3840x2160 -> 1920x1080 directly on-die in hardware ISP!
     cam.setFps(30)
     cam.setImageOrientation(dai.CameraImageOrientation.ROTATE_180_DEG)
     cam.initialControl.setAutoFocusMode(dai.CameraControl.AutoFocusMode.CONTINUOUS_VIDEO)
 
-    # 3. Stream 1: Full 4K -> Dedicated Hardware H.265 Encoder (25 Mbps) -> XLinkOut
-    h265 = pipeline.create(dai.node.VideoEncoder)
-    h265.setDefaultProfilePreset(30, dai.VideoEncoderProperties.Profile.H265_MAIN)
-    h265.setBitrate(25_000_000)
-    cam.video.link(h265.input)
-
-    xout_h265 = pipeline.create(dai.node.XLinkOut)
-    xout_h265.setStreamName("h265_4k")
-    h265.bitstream.link(xout_h265.input)
-
-    # 4. Stream 2: 4K -> Downscale to Crisp 1080p NV12 -> UVC Node (Plug-and-Play)
-    manip = pipeline.create(dai.node.ImageManip)
-    manip.initialConfig.setResize(1920, 1080)
-    manip.initialConfig.setFrameType(dai.RawImgFrame.Type.NV12)
-    manip.setMaxOutputFrameSize(int(1920 * 1080 * 1.5))
-    cam.video.link(manip.inputImage)
-
+    # 3. Direct Hardware ISP -> UVC Output (Pure line-rate, zero backpressure)
     uvc = pipeline.create(dai.node.UVC)
-    manip.out.link(uvc.input)
-
-    # 5. Stream 3: Real-Time System Health & Thermal Telemetry
-    syslog = pipeline.create(dai.node.SystemLogger)
-    syslog.setRate(1.0)  # 1 Hz telemetry
-    xout_sys = pipeline.create(dai.node.XLinkOut)
-    xout_sys.setStreamName("sysinfo")
-    syslog.out.link(xout_sys.input)
+    cam.video.link(uvc.input)
 
     return pipeline
 
