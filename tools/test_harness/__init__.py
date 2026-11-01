@@ -13,6 +13,11 @@ from .pipeline import (
     build_dual_stream_pipeline,
     build_standalone_uvc_pipeline,
 )
+from .telemetry import (
+    TelemetryRecorder,
+    TelemetrySample,
+    sparkline,
+)
 
 __all__ = [
     "HEVC_KEYFRAME_TYPES",
@@ -23,4 +28,7 @@ __all__ = [
     "parse_hevc_nal_units",
     "build_dual_stream_pipeline",
     "build_standalone_uvc_pipeline",
+    "TelemetryRecorder",
+    "TelemetrySample",
+    "sparkline",
 ]

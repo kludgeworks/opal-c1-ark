@@ -20,3 +20,10 @@ firmware/luxonis/device/
 
 # Local AsciiDoc drafts & notes
 *.adoc
+
+# Test outputs, captured bitstreams & telemetry charts
+tests/output/
+tools/test_harness/*.h265
+tools/test_harness/*.csv
+tools/test_harness/*.html
+tools/test_harness/*.json

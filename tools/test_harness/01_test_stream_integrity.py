@@ -41,14 +41,10 @@ from rich.text import Text
 
 from tools.test_harness.hevc import parse_hevc_nal_units
 from tools.test_harness.pipeline import build_dual_stream_pipeline
+from tools.test_harness.telemetry import TelemetryRecorder, sparkline
 
 console = Console()
 REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
-    xout_sys = pipeline.create(dai.node.XLinkOut)
-    xout_sys.setStreamName("sysinfo")
-    sys_logger.out.link(xout_sys.input)
-
-    return pipeline
 
 
 def resolve_target_device(mxid: str | None = None) -> dai.DeviceInfo:
@@ -76,6 +72,9 @@ def render_dashboard(
     uptime_sec: float,
     duration_sec: int,
     is_paused: bool,
+    fps_history: list[float] | None = None,
+    bps_history: list[float] | None = None,
+    temp_history: list[float] | None = None,
 ) -> Layout:
     layout = Layout()
     layout.split_column(
@@ -116,8 +115,12 @@ def render_dashboard(
     stream_table.add_row("Frames Ingested", f"{stats['frames_total']:,}")
     stream_table.add_row("Instantaneous FPS", Text(f"{stats['current_fps']:.1f} FPS", style=fps_style))
     stream_table.add_row("Average FPS", f"{stats['avg_fps']:.1f} FPS")
+    if fps_history:
+        stream_table.add_row("Framerate Trend", f"[bold green]{sparkline(fps_history)}[/bold green]")
     stream_table.add_row("Instantaneous Bitrate", f"{bitrate_mbps:.2f} Mbps")
     stream_table.add_row("Average Bitrate", f"{avg_bitrate_mbps:.2f} Mbps")
+    if bps_history:
+        stream_table.add_row("Bitrate Trend", f"[bold cyan]{sparkline(bps_history)}[/bold cyan]")
     stream_table.add_row("Keyframes (IDR / CRA)", f"{stats['keyframes']:,} (GOP ~{stats['last_gop']})")
     stream_table.add_row("Avg Packet Size", f"{stats['avg_frame_kib']:.1f} KiB")
     layout["stream"].update(Panel(stream_table, box=box.ROUNDED))
@@ -135,6 +138,8 @@ def render_dashboard(
     health_table.add_row("Average Chip Temp", Text(f"{avg_temp:.1f} °C", style=temp_style))
     health_table.add_row("CSS Core Temp", f"{css_temp:.1f} °C")
     health_table.add_row("MSS Core Temp", f"{mss_temp:.1f} °C")
+    if temp_history:
+        health_table.add_row("Thermal Trend", f"[bold orange3]{sparkline(temp_history)}[/bold orange3]")
     health_table.add_row("Thermal Headroom", f"{max(0.0, 85.0 - avg_temp):.1f} °C to throttle ceiling")
     health_table.add_row(
         "DDR Memory Usage",
@@ -202,6 +207,21 @@ def main():
         action="store_true",
         help="Flash this dual-stream pipeline permanently to SPI flash partition 0x100000",
     )
+    parser.add_argument(
+        "--export-csv",
+        default="tests/output/telemetry.csv",
+        help="Path to export time-series telemetry CSV (default: tests/output/telemetry.csv)",
+    )
+    parser.add_argument(
+        "--export-json",
+        default="tests/output/telemetry.json",
+        help="Path to export time-series metrics JSON (default: tests/output/telemetry.json)",
+    )
+    parser.add_argument(
+        "--export-html",
+        default="tests/output/benchmark_report.html",
+        help="Path to export interactive visual HTML report with SVG charts (default: tests/output/benchmark_report.html)",
+    )
 
     args = parser.parse_args()
     duration = args.duration
@@ -209,6 +229,9 @@ def main():
     fps = args.fps
     save_path = REPO_ROOT / args.save_h265
     save_path.parent.mkdir(parents=True, exist_ok=True)
+    csv_path = REPO_ROOT / args.export_csv
+    json_path = REPO_ROOT / args.export_json
+    html_path = REPO_ROOT / args.export_html
     sim_disconnect = args.simulate_disconnect
     mxid_arg = args.mxid
 
@@ -266,9 +289,14 @@ def main():
             "avg_frame_kib": 0.0,
         }
         telemetry = {}
+        recorder = TelemetryRecorder()
 
         fps_window = deque(maxlen=30)
         bytes_window = deque(maxlen=30)
+        fps_history = deque(maxlen=40)
+        bps_history = deque(maxlen=40)
+        temp_history = deque(maxlen=40)
+
         start_time = time.time()
         last_keyframe_frame = 0
         is_paused = False
@@ -302,7 +330,18 @@ def main():
                             is_paused = True
                             pause_start = now
                         time.sleep(0.05)
-                        live.update(render_dashboard(stats, telemetry, uptime, duration, True))
+                        live.update(
+                            render_dashboard(
+                                stats,
+                                telemetry,
+                                uptime,
+                                duration,
+                                True,
+                                list(fps_history),
+                                list(bps_history),
+                                list(temp_history),
+                            )
+                        )
                         continue
                     elif is_paused and uptime > 14.0:
                         is_paused = False
@@ -360,8 +399,42 @@ def main():
 
                     stats["avg_frame_kib"] = (stats["bytes_total"] / stats["frames_total"]) / 1024.0
 
+                    current_bps_mbps = (stats["instant_bps"] * 8) / 1_000_000
+                    recorder.record(
+                        timestamp_sec=uptime,
+                        fps=stats["current_fps"],
+                        bitrate_mbps=current_bps_mbps,
+                        frame_size_kib=packet_len / 1024.0,
+                        is_keyframe=is_keyframe,
+                        temp_avg_c=telemetry.get("temp_avg", 0.0),
+                        temp_css_c=telemetry.get("temp_css", 0.0),
+                        temp_mss_c=telemetry.get("temp_mss", 0.0),
+                        ddr_used_mib=telemetry.get("ddr_used_mib", 0.0),
+                        cmx_used_mib=telemetry.get("cmx_used_mib", 0.0),
+                        cpu_css_pct=telemetry.get("cpu_css_pct", 0.0),
+                        cpu_mss_pct=telemetry.get("cpu_mss_pct", 0.0),
+                    )
+
+                    if stats["current_fps"] > 0:
+                        fps_history.append(stats["current_fps"])
+                    if current_bps_mbps > 0:
+                        bps_history.append(current_bps_mbps)
+                    if "temp_avg" in telemetry and telemetry["temp_avg"] > 0:
+                        temp_history.append(telemetry["temp_avg"])
+
                 time.sleep(0.002)
-                live.update(render_dashboard(stats, telemetry, uptime, duration, is_paused))
+                live.update(
+                    render_dashboard(
+                        stats,
+                        telemetry,
+                        uptime,
+                        duration,
+                        is_paused,
+                        list(fps_history),
+                        list(bps_history),
+                        list(temp_history),
+                    )
+                )
 
         h265_file.close()
 
@@ -444,6 +517,25 @@ def main():
                 )
         except Exception as exc:
             console.print(f"[yellow]ffprobe validation note: {exc}[/yellow]")
+
+    # Export Chartable Telemetry & Reports
+    if recorder.samples:
+        recorder.export_csv(csv_path)
+        recorder.export_json(json_path)
+        recorder.generate_html_report(html_path, title=f"Opal C1 Benchmark Telemetry ({int(uptime)}s run)")
+
+        console.print()
+        console.print(
+            Panel(
+                f"[bold cyan]📊 Chartable Telemetry & Visual Reports Exported:[/bold cyan]\n\n"
+                f"  • [bold]Raw CSV Telemetry[/bold]  : file://{csv_path} ({len(recorder.samples):,} samples)\n"
+                f"  • [bold]JSON Summary[/bold]        : file://{json_path}\n"
+                f"  • [bold green]Interactive HTML Chart[/bold green]: file://{html_path}\n\n"
+                f"[dim]Tip: Open the HTML report in Safari/Chrome to view responsive SVG charts for FPS, Bitrate, Thermals, and CPU load.[/dim]",
+                title="Telemetry & Charting Exports",
+                border_style="bright_cyan",
+            )
+        )
 
 
 if __name__ == "__main__":
