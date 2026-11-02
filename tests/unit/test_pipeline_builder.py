@@ -25,7 +25,7 @@ def test_dual_stream_pipeline_nodes():
 
 @pytest.mark.offline
 def test_camera_hardware_isp_configuration():
-    """Camera node must configure CAM_A, 4K resolution, 1:2 ISP downscale, and 180 deg rotation."""
+    """Camera node must configure CAM_A, 4K resolution, 1080p preview downscale, and 180 deg rotation."""
     pipeline = build_dual_stream_pipeline(fps=30, bitrate_kbps=25000)
     cam = next(n for n in pipeline.getAllNodes() if isinstance(n, dai.node.ColorCamera))
 
@@ -33,10 +33,11 @@ def test_camera_hardware_isp_configuration():
     assert cam.getResolution() == dai.ColorCameraProperties.SensorResolution.THE_4_K
     assert cam.getImageOrientation() == dai.CameraImageOrientation.ROTATE_180_DEG
     assert cam.getFps() == 30.0
-    # ISP scale 1:2 scales 3840x2160 -> 1920x1080 in silicon with 0ms DSP latency
-    assert cam.getIspSize() == (1920, 1080)
-    # Native video output must remain 3840x2160 for 4K H.265 encoding
+    # ISP retains full 4K (3840x2160) for H.265 encoding
+    assert cam.getIspSize() == (3840, 2160)
     assert cam.getVideoSize() == (3840, 2160)
+    # Hardware downscaler scales to 1920x1080 preview for UVC streaming
+    assert cam.getPreviewSize() == (1920, 1080)
 
 
 @pytest.mark.offline

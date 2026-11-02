@@ -27,7 +27,7 @@ def test_dual_stream_pipeline_launch():
     pipeline = build_dual_stream_pipeline(bitrate_kbps=25000, fps=30)
     try:
         with dai.Device(pipeline, dev_info) as device:
-            q_h265 = device.getOutputQueue(name="hevc_stream", maxSize=4, blocking=False)
+            q_h265 = device.getOutputQueue(name="h265", maxSize=4, blocking=False)
             assert q_h265 is not None
 
             # Pull at least 15 frames (0.5s of video) to verify hardware encoder is pumping frames
@@ -61,7 +61,7 @@ def test_xlink_disconnect_and_reconnect_resilience():
         pipeline = build_dual_stream_pipeline(bitrate_kbps=25000, fps=30)
         try:
             with dai.Device(pipeline, dev_info) as device:
-                q = device.getOutputQueue(name="hevc_stream", maxSize=4, blocking=False)
+                q = device.getOutputQueue(name="h265", maxSize=4, blocking=False)
                 got_frame = False
                 t0 = time.time()
                 while not got_frame and (time.time() - t0) < 4.0:

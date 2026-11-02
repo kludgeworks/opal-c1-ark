@@ -32,14 +32,14 @@ def build_dual_stream_pipeline(
     cam.setImageOrientation(dai.CameraImageOrientation.ROTATE_180_DEG)
     cam.initialControl.setAutoFocusMode(dai.CameraControl.AutoFocusMode.CONTINUOUS_VIDEO)
 
-    # Hardware ISP: downscale 4K raw Bayer to 1080p directly on-die (0 ms overhead)
-    cam.setIspScale(1, 2)
     # Native full 4K output for the H.265 encoder
     cam.setVideoSize(3840, 2160)
+    # Hardware downscaler for 1080p UVC stream
+    cam.setPreviewSize(uvc_width, uvc_height)
 
-    # 3. UVC Output (Streams 1080p uncompressed NV12 from hardware ISP)
+    # 3. UVC Output (Streams 1080p uncompressed NV12 from hardware downscaler)
     uvc = pipeline.create(dai.node.UVC)
-    cam.isp.link(uvc.input)
+    cam.preview.link(uvc.input)
 
     # 4. Hardware H.265 Encoder ASIC (Full 4K @ 25 Mbps CBR)
     enc = pipeline.create(dai.node.VideoEncoder)
