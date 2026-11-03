@@ -7,12 +7,21 @@ and telemetry state updates.
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
+# Prevent tools/inspect.py from shadowing standard library 'inspect' during execution
+_tools_dir = str(Path(__file__).resolve().parent)
+_repo_root = str(Path(__file__).resolve().parent.parent)
+while _tools_dir in sys.path:
+    sys.path.remove(_tools_dir)
+if _repo_root not in sys.path:
+    sys.path.insert(0, _repo_root)
+
 import argparse
 import ctypes
 import os
-import sys
 import time
-from pathlib import Path
 
 # Camera States
 STATE_IDLE = 0          # Connected, 0 clients streaming -> Open outline circle
@@ -256,10 +265,7 @@ def run_live_hardware(bridge: OpalC1UIBridge):
 
     try:
         import depthai as dai
-        try:
-            from tools.test_harness.pipeline import build_companion_pipeline
-        except ImportError:
-            from test_harness.pipeline import build_companion_pipeline
+        from tools.test_harness.pipeline import build_companion_pipeline
     except ImportError as e:
         print(f"[-] Missing dependency: {e}")
         return
