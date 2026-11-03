@@ -32,6 +32,10 @@ run = "swift build --package-path companion"
 description = "Run OpalC1Core 4K VideoToolbox decode benchmark against test bitstream"
 run = "swift build --package-path companion && companion/.build/debug/OpalC1TestRunner"
 
+[tasks."companion:package"]
+description = "Package OpalC1Ark.app bundle with embedded CMIOExtension"
+run = "python tools/package_app.py"
+
 [tasks."ui:mockup"]
 description = "Run interactive v0 Menu Bar Extra mockup with animated demo tour"
 run = "swift build --package-path companion && uv run python tools/mockup_v0_ui.py"
