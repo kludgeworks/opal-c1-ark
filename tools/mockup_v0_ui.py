@@ -248,12 +248,20 @@ def run_demo_tour(bridge: OpalC1UIBridge, seconds_per_state: int = 4):
 
 
 def run_live_hardware(bridge: OpalC1UIBridge):
-    """Queries live Opal C1 camera hardware and feeds telemetry to the menu bar."""
-    print("\n[*] Connecting to Opal C1 hardware via DepthAI...")
+    """Wires the live Opal C1 camera hardware directly to the v0 Menu Bar Extra."""
+    print("\n" + "=" * 65)
+    print("  OPAL C1 ARK — v0 · LIVE HARDWARE INTEGRATION")
+    print("  Streaming 4K H.265 from Sony IMX582 sensor to Menu Bar Extra")
+    print("=" * 65 + "\n")
+
     try:
         import depthai as dai
-    except ImportError:
-        print("[-] DepthAI not installed in current environment.")
+        try:
+            from tools.test_harness.pipeline import build_companion_pipeline
+        except ImportError:
+            from test_harness.pipeline import build_companion_pipeline
+    except ImportError as e:
+        print(f"[-] Missing dependency: {e}")
         return
 
     devices = dai.Device.getAllAvailableDevices()
@@ -265,50 +273,172 @@ def run_live_hardware(bridge: OpalC1UIBridge):
             time.sleep(0.02)
 
     dev_info = devices[0]
-    print(f"[+] Found device: {dev_info.getMxId()} ({dev_info.desc.name})")
+    print(f"[+] Found device: {dev_info.getMxId()} (Status: {dev_info.state.name})")
 
+    pipeline = build_companion_pipeline()
+
+    print("[*] Booting Opal C1 companion pipeline on silicon...")
     try:
-        with dai.Device(dai.Pipeline(), dev_info) as device:
-            print("[+] Device connected. Polling junction temperature and status at 1 Hz...")
-            bridge.set_state(STATE_IDLE, "Idle · 4K Ready", temp_c=39.0)
+        with dai.Device(pipeline, dev_info) as device:
+            print("[+] Silicon pipeline active! SuperSpeed XLink link established.")
 
-            while True:
-                # Query chip temperature
-                temp_info = device.getChipTemperature()
-                avg_temp = temp_info.average
+            q_h265 = device.getOutputQueue("h265", maxSize=8, blocking=False)
+            q_ctrl = device.getInputQueue("control")
+            q_cfg = device.getInputQueue("config")
 
-                state = STATE_ATTENTION if avg_temp >= 65.0 else STATE_IDLE
-                status = f"⚠️ Thermal Throttle: {avg_temp:.1f}°C" if avg_temp >= 65.0 else f"Idle · {avg_temp:.1f}°C"
+            is_paused = False
+            active_preset = 1
+            running = True
 
-                bridge.set_state(state=state, status_line=status, temp_c=avg_temp)
+            def handle_hardware_action(action_code: int):
+                nonlocal is_paused, active_preset, running
+                on_menu_action(action_code)
 
-                # Pump UI for 1 second
-                for _ in range(20):
-                    bridge.pump_events(0.05)
-                    time.sleep(0.02)
+                if action_code == ACTION_TOGGLE_PAUSE:
+                    is_paused = not is_paused
+                    ctrl = dai.CameraControl()
+                    if is_paused:
+                        ctrl.setStopStreaming()
+                        print("[⚡ Hardware] Sensor stream STOPPED (mute)")
+                    else:
+                        ctrl.setStartStreaming()
+                        print("[⚡ Hardware] Sensor stream RESUMED (unmute)")
+                    q_ctrl.send(ctrl)
+
+                elif action_code == ACTION_PRESET_1:
+                    active_preset = 1
+                    cfg = dai.ImageManipConfig()
+                    cfg.setCropRect(0.15, 0.15, 0.85, 0.85)
+                    q_cfg.send(cfg)
+                    print("[⚡ Hardware] Applied Preset 1: Headshot (1.4x crop)")
+
+                elif action_code == ACTION_PRESET_2:
+                    active_preset = 2
+                    cfg = dai.ImageManipConfig()
+                    cfg.setCropRect(0.10, 0.35, 0.90, 0.95)
+                    q_cfg.send(cfg)
+                    print("[⚡ Hardware] Applied Preset 2: Desk View (tilt crop)")
+
+                elif action_code == ACTION_PRESET_3:
+                    active_preset = 3
+                    cfg = dai.ImageManipConfig()
+                    cfg.setCropRect(0.0, 0.0, 1.0, 1.0)
+                    q_cfg.send(cfg)
+                    print("[⚡ Hardware] Applied Preset 3: Wide Studio (full 4K)")
+
+                elif action_code == ACTION_QUIT:
+                    print("[⚡ Hardware] Quit requested. Shutting down...")
+                    running = False
+
+            bridge.register_callback(handle_hardware_action)
+
+            # Rolling stats counters
+            last_stats_time = time.time()
+            frames_in_window = 0
+            bytes_in_window = 0
+            cur_fps = 0.0
+            cur_mbps = 0.0
+            cur_temp = 41.5
+
+            print("\n[✔] Opal C1 Ark Menu Bar Extra is LIVE.")
+            print("  • Look at the top right of your macOS screen for the live icon.")
+            print("  • Click the icon to test: Pause Video (⌃⌥V) or Presets (⌃⌥1–3).")
+            print("  • Select 'Quit Opal C1 Ark' in the menu or press Ctrl+C to stop.\n")
+
+            while running:
+                # Ingest available packets
+                while True:
+                    pkt = q_h265.tryGet()
+                    if not pkt:
+                        break
+                    frames_in_window += 1
+                    bytes_in_window += len(pkt.getData())
+
+                now = time.time()
+                elapsed = now - last_stats_time
+                if elapsed >= 1.0:
+                    cur_fps = frames_in_window / elapsed
+                    cur_mbps = (bytes_in_window * 8) / (1_000_000 * elapsed)
+                    frames_in_window = 0
+                    bytes_in_window = 0
+                    last_stats_time = now
+
+                    try:
+                        cur_temp = device.getChipTemperature().average
+                    except Exception:
+                        pass
+
+                    # Determine UI state
+                    if is_paused:
+                        state = STATE_PAUSED
+                        status_line = "Video Paused (Sensor Mute)"
+                    elif cur_temp >= 65.0:
+                        state = STATE_ATTENTION
+                        status_line = f"⚠️ Thermal Warning: {cur_temp:.1f}°C"
+                    else:
+                        state = STATE_LIVE
+                        status_line = f"4K30 · HEVC {cur_mbps:.1f} Mb/s · {cur_temp:.1f}°C"
+
+                    preset_names = {1: "Headshot", 2: "Desk View", 3: "Wide Studio"}
+                    client_desc = f"4K ({preset_names.get(active_preset, 'Live')})"
+
+                    bridge.set_state(
+                        state=state,
+                        status_line=status_line,
+                        client_name=client_desc if not is_paused else None,
+                        fps=cur_fps,
+                        bitrate_mbps=cur_mbps,
+                        temp_c=cur_temp,
+                    )
+
+                    # Print rolling terminal telemetry
+                    sys.stdout.write(
+                        f"\r[Telemetry] State: {STATE_NAMES[state]:<24} | FPS: {cur_fps:4.1f} | Bitrate: {cur_mbps:4.1f} Mb/s | Temp: {cur_temp:4.1f}°C   "
+                    )
+                    sys.stdout.flush()
+
+                # Pump Cocoa event loop
+                bridge.pump_events(0.03)
+                time.sleep(0.01)
+
+    except KeyboardInterrupt:
+        print("\n[*] Interrupted by user. Exiting cleanly...")
     except Exception as e:
-        print(f"[-] Hardware polling error: {e}")
+        print(f"\n[-] Hardware runtime error: {e}")
         bridge.set_state(STATE_DISCONNECTED, f"Hardware Error: {e}")
-        while True:
-            bridge.pump_events(0.05)
-            time.sleep(0.02)
+        bridge.pump_events(0.1)
 
 
 def main():
     parser = argparse.ArgumentParser(description="Opal C1 Ark v0 Menu Bar Extra Mockup")
-    parser.add_argument("--demo", action="store_true", default=True, help="Run animated demo tour of all states (default)")
-    parser.add_argument("--live", action="store_true", help="Connect to physical Opal C1 hardware")
+    parser.add_argument("--demo", action="store_true", help="Force animated demo tour of all states")
+    parser.add_argument("--live", action="store_true", help="Force live connection to physical Opal C1 hardware")
     parser.add_argument("--seconds", type=int, default=3, help="Seconds per demo tour step (default: 3)")
     args = parser.parse_args()
 
     bridge = OpalC1UIBridge()
     bridge.initialize()
-    bridge.register_callback(on_menu_action)
 
-    if args.live:
+    if args.demo:
+        bridge.register_callback(on_menu_action)
+        run_demo_tour(bridge, seconds_per_state=args.seconds)
+    elif args.live:
         run_live_hardware(bridge)
     else:
-        run_demo_tour(bridge, seconds_per_state=args.seconds)
+        # Auto-detect: if Opal C1 is connected, use Live Hardware mode; otherwise run Demo Tour
+        try:
+            import depthai as dai
+            devices = dai.Device.getAllAvailableDevices()
+        except Exception:
+            devices = []
+
+        if devices:
+            print(f"[+] Opal C1 detected on USB ({devices[0].getMxId()}). Starting in Live Hardware mode.")
+            run_live_hardware(bridge)
+        else:
+            print("[-] No Opal C1 hardware found on USB. Starting in Demo Tour mode.")
+            bridge.register_callback(on_menu_action)
+            run_demo_tour(bridge, seconds_per_state=args.seconds)
 
 
 if __name__ == "__main__":

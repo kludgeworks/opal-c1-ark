@@ -78,3 +78,23 @@ def test_standalone_uvc_pipeline_has_no_unread_xlinks():
         f"Standalone UVC pipeline contains {len(xlinks)} XLinkOut nodes! "
         "Standalone boot pipelines must contain zero unread XLink nodes to prevent FIFO lockup."
     )
+
+
+@pytest.mark.offline
+def test_companion_pipeline_nodes():
+    """Companion pipeline must have 4K sensor, encoder, XLinkIn controls, and zero UVC nodes."""
+    from tools.test_harness.pipeline import build_companion_pipeline
+
+    pipeline = build_companion_pipeline(fps=30, bitrate_kbps=25000)
+    nodes = pipeline.getAllNodes()
+    node_types = {type(n).__name__ for n in nodes}
+
+    assert "ColorCamera" in node_types, "Pipeline missing ColorCamera"
+    assert "VideoEncoder" in node_types, "Pipeline missing VideoEncoder"
+    assert "XLinkIn" in node_types, "Pipeline missing XLinkIn control nodes"
+    assert "XLinkOut" in node_types, "Pipeline missing XLinkOut streaming nodes"
+    assert "UVC" not in node_types, "Companion pipeline must NOT contain UVC node (avoids 0xe0005000)"
+
+    xin_names = {n.getStreamName() for n in nodes if isinstance(n, dai.node.XLinkIn)}
+    assert "control" in xin_names, "Missing 'control' input queue"
+    assert "config" in xin_names, "Missing 'config' input queue"

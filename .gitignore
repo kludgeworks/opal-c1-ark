@@ -34,3 +34,6 @@ companion/.build/
 DerivedData/
 *.xcodeproj/
 *.xcworkspace/
+
+# Caches
+.cache/

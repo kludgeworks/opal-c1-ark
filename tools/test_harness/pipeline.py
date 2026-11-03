@@ -96,3 +96,59 @@ def build_standalone_uvc_pipeline(
     cam.video.link(uvc.input)
 
     return pipeline
+
+
+def build_companion_pipeline(
+    fps: int = 30,
+    bitrate_kbps: int = 25000,
+) -> dai.Pipeline:
+    """Pipeline for the macOS Companion App.
+
+    Streams full 4K H.265 video with interactive camera control (presets,
+    digital crop) and system telemetry. Omits UVC nodes to prevent
+    UVCAssistant contention (0xe0005000) and idle backpressure stalls.
+    """
+    pipeline = dai.Pipeline()
+
+    # 1. Configure 48 MP Sony IMX582 Sensor (CAM_A)
+    cam = pipeline.create(dai.node.ColorCamera)
+    cam.setBoardSocket(dai.CameraBoardSocket.CAM_A)
+    cam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_4_K)
+    cam.setFps(fps)
+    cam.setImageOrientation(dai.CameraImageOrientation.ROTATE_180_DEG)
+    cam.initialControl.setAutoFocusMode(dai.CameraControl.AutoFocusMode.CONTINUOUS_VIDEO)
+    cam.setVideoSize(3840, 2160)
+
+    # 2. Dynamic Camera Control (Pause, Focus, Exposure)
+    xin_control = pipeline.create(dai.node.XLinkIn)
+    xin_control.setStreamName("control")
+    xin_control.out.link(cam.inputControl)
+
+    # 3. Dynamic ISP Configuration (Lossless e-PTZ crop presets)
+    xin_config = pipeline.create(dai.node.XLinkIn)
+    xin_config.setStreamName("config")
+    xin_config.out.link(cam.inputConfig)
+
+    # 4. Hardware H.265 Encoder ASIC (Full 4K @ 25 Mbps CBR)
+    enc = pipeline.create(dai.node.VideoEncoder)
+    enc.setDefaultProfilePreset(fps, dai.VideoEncoderProperties.Profile.H265_MAIN)
+    enc.setBitrateKbps(bitrate_kbps)
+    enc.setKeyframeFrequency(fps)
+    enc.setRateControlMode(dai.VideoEncoderProperties.RateControlMode.CBR)
+    cam.video.link(enc.input)
+
+    # 5. Non-blocking XLinkOut for 4K bitstream
+    xout_h265 = pipeline.create(dai.node.XLinkOut)
+    xout_h265.setStreamName("h265")
+    xout_h265.input.setBlocking(False)
+    xout_h265.input.setQueueSize(30)
+    enc.bitstream.link(xout_h265.input)
+
+    # 6. System Health & Thermal Telemetry
+    sys_logger = pipeline.create(dai.node.SystemLogger)
+    sys_logger.setRate(1.0)
+    xout_sys = pipeline.create(dai.node.XLinkOut)
+    xout_sys.setStreamName("sysinfo")
+    sys_logger.out.link(xout_sys.input)
+
+    return pipeline
