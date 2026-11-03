@@ -27,3 +27,10 @@ tools/test_harness/*.h265
 tools/test_harness/*.csv
 tools/test_harness/*.html
 tools/test_harness/*.json
+
+# Swift & Apple build artifacts
+.build/
+companion/.build/
+DerivedData/
+*.xcodeproj/
+*.xcworkspace/

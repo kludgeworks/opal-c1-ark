@@ -23,3 +23,19 @@ run = "uv run pytest tests/hardware -m hardware"
 [tasks."test:all"]
 description = "Run complete test suite (unit + hardware)"
 run = "uv run pytest"
+
+[tasks."companion:build"]
+description = "Build the Swift companion package (OpalC1Core + OpalC1UI dylib + OpalC1Companion)"
+run = "swift build --package-path companion"
+
+[tasks."companion:test"]
+description = "Run OpalC1Core 4K VideoToolbox decode benchmark against test bitstream"
+run = "swift build --package-path companion && companion/.build/debug/OpalC1TestRunner"
+
+[tasks."ui:mockup"]
+description = "Run interactive v0 Menu Bar Extra mockup with animated demo tour"
+run = "swift build --package-path companion && uv run python tools/mockup_v0_ui.py"
+
+[tasks."ui:live"]
+description = "Run v0 Menu Bar Extra with live Opal C1 telemetry polling"
+run = "swift build --package-path companion && uv run python tools/mockup_v0_ui.py --live"
